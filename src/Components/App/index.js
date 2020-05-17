@@ -10,6 +10,7 @@ import AccountPage from "../Account";
 import AdminPage from "../Admin";
 import * as ROUTES from "../../Constants/routes";
 import { withAuthentication } from "../Session";
+import Notes from "../Notes";
 
 const App = () => (
   <Router>
@@ -27,6 +28,7 @@ const App = () => (
         <Route exact path={ROUTES.HOME} component={HomePage} />
         <Route exact path={ROUTES.ACCOUNT} component={AccountPage} />
         <Route exact path={ROUTES.ADMIN} component={AdminPage} />
+        <Route exact path={ROUTES.NOTES} component={Notes} />
       </div>
     </div>
   </Router>

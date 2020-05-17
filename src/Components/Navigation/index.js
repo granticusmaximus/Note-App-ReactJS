@@ -44,6 +44,11 @@ const NavigationAuth = (props) => {
                 <Link to={ROUTES.ACCOUNT}>Account</Link>
               </NavLink>
             </NavItem>
+            <NavItem>
+              <NavLink>
+                <Link to={ROUTES.NOTES}>Notes</Link>
+              </NavLink>
+            </NavItem>
           </Nav>
           <NavbarText>
             <SignOutButton />
