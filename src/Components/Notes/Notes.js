@@ -1,130 +1,83 @@
 import React, { Component } from "react";
-
-import { AuthUserContext } from "../Session";
+import { withRouter } from "react-router-dom";
+import { Form, Input, Button, InputArea } from "reactstrap";
 import { withFirebase } from "../Firebase";
-import NotesList from "./NotesList";
+import * as ROUTES from "../../Constants/routes";
 
-class Notes extends Component {
+const NotesPage = () => (
+  <div>
+    <h1>My Lovely Note</h1>
+  </div>
+);
+
+const INITIAL_STATE = {
+  notesTitle: "",
+  noteContent: "",
+  currentDate: new Date().toLocaleString(),
+};
+
+class NotesFormBase extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      text: "",
-      loading: false,
-      messages: [],
-      limit: 5,
-    };
+    this.state = { ...INITIAL_STATE };
   }
 
-  componentDidMount() {
-    this.onListenForMessages();
-  }
-
-  onListenForMessages = () => {
-    this.setState({ loading: true });
+  onSubmit = (event) => {
+    const { notesTitle, noteContent } = this.state;
 
     this.props.firebase
-      .messages()
-      .orderByChild("createdAt")
-      .limitToLast(this.state.limit)
-      .on("value", (snapshot) => {
-        const messageObject = snapshot.val();
-
-        if (messageObject) {
-          const messageList = Object.keys(messageObject).map((key) => ({
-            ...messageObject[key],
-            uid: key,
-          }));
-
-          this.setState({
-            messages: messageList,
-            loading: false,
-          });
-        } else {
-          this.setState({ messages: null, loading: false });
-        }
+      .doCreateNotesTitleandContent(notesTitle, noteContent)
+      .then((authUser) => {
+        this.setState({ ...INITIAL_STATE });
+        this.props.history.push(ROUTES.NOTES);
+      })
+      .catch((error) => {
+        this.setState({ error });
       });
-  };
-
-  componentWillUnmount() {
-    this.props.firebase.messages().off();
-  }
-
-  onChangeText = (event) => {
-    this.setState({ text: event.target.value });
-  };
-
-  onCreateMessage = (event, authUser) => {
-    this.props.firebase.messages().push({
-      text: this.state.text,
-      userId: authUser.uid,
-      createdAt: this.props.firebase.serverValue.TIMESTAMP,
-    });
-
-    this.setState({ text: "" });
 
     event.preventDefault();
   };
 
-  onEditMessage = (message, text) => {
-    this.props.firebase.message(message.uid).set({
-      ...message,
-      text,
-      editedAt: this.props.firebase.serverValue.TIMESTAMP,
-    });
-  };
-
-  onRemoveMessage = (uid) => {
-    this.props.firebase.message(uid).remove();
-  };
-
-  onNextPage = () => {
-    this.setState(
-      (state) => ({ limit: state.limit + 5 }),
-      this.onListenForMessages
-    );
+  onChange = (event) => {
+    this.setState({ [event.target.name]: event.target.value });
   };
 
   render() {
-    const { users } = this.props;
-    const { text, messages, loading } = this.state;
+    const { notesTitle, noteContent, error } = this.state;
 
+    
     return (
-      <AuthUserContext.Consumer>
-        {(authUser) => (
-          <div>
-            {!loading && messages && (
-              <button type='button' onClick={this.onNextPage}>
-                More
-              </button>
-            )}
+      <div className='App-box'>
+        <Form onSubmit={this.onSubmit}>
+          <Input
+            name='notesTitle'
+            value={notesTitle}
+            onChange={this.onChange}
+            type='text'
+            placeholder='Add Title For Note'
+          />
+          <br />
+          <br />
+          <InputArea
+            name='noteContent'
+            value={noteContent}
+            onChange={this.onChange}
+            type='password'
+            placeholder='Password'
+          />
+          <br />
+          <Button type='submit'>
+            Add Note
+          </Button>
 
-            {loading && <div>Loading ...</div>}
-
-            {messages && (
-              <NotesList
-                messages={messages.map((message) => ({
-                  ...message,
-                  user: users
-                    ? users[message.userId]
-                    : { userId: message.userId },
-                }))}
-                onEditMessage={this.onEditMessage}
-                onRemoveMessage={this.onRemoveMessage}
-              />
-            )}
-
-            {!messages && <div>There are no messages ...</div>}
-
-            <form onSubmit={(event) => this.onCreateMessage(event, authUser)}>
-              <input type='text' value={text} onChange={this.onChangeText} />
-              <button type='submit'>Send</button>
-            </form>
-          </div>
-        )}
-      </AuthUserContext.Consumer>
+          {error && <p>{error.message}</p>}
+        </Form>
+      </div>
     );
   }
 }
 
-export default withFirebase(Notes);
+const NotesForm = withRouter(withFirebase(NotesFormBase));
+export default NotesPage;
+export { NotesForm };

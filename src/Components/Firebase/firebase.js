@@ -37,8 +37,13 @@ class Firebase {
     this.auth.currentUser.updatePassword(password);
 
   //Notes API
+  doCreateNotesTitleandContent = (notesTitle, noteContent) =>
+    this.db.CreateNotesTitleandContent(notesTitle, noteContent);
 
-  message = (uid) => this.db.ref(`messages/${uid}`);
+  doUpdateNotesTitleandContent = (notesTitle, noteContent) =>
+    this.db.UpdateNotesTitleandContent(notesTitle, noteContent);
+
+  message = (nid) => this.db.ref(`messages/${nid}`);
 
   messages = () => this.db.ref("messages");
 
