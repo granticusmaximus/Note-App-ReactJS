@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import SignOutButton from "../SignOut";
-import * as ROUTES from "../../Constants/routes";
 import { AuthUserContext } from "../Session";
 import {
   Collapse,
@@ -9,8 +7,6 @@ import {
   NavbarToggler,
   NavbarBrand,
   Nav,
-  NavItem,
-  NavLink,
   NavbarText,
 } from "reactstrap";
 
@@ -30,26 +26,10 @@ const NavigationAuth = (props) => {
   return (
     <div>
       <Navbar color='light' light expand='md'>
-        <NavbarBrand href='/'>Notes App</NavbarBrand>
+        <NavbarBrand href='/notes'>Notes App</NavbarBrand>
         <NavbarToggler onClick={toggle} />
         <Collapse isOpen={isOpen} navbar>
-          <Nav className='mr-auto' navbar>
-            <NavItem>
-              <NavLink>
-                <Link to={ROUTES.HOME}>Home</Link>
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink>
-                <Link to={ROUTES.ACCOUNT}>Account</Link>
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink>
-                <Link to={ROUTES.NOTES}>Notes</Link>
-              </NavLink>
-            </NavItem>
-          </Nav>
+          <Nav className='mr-auto' navbar></Nav>
           <NavbarText>
             <SignOutButton />
           </NavbarText>

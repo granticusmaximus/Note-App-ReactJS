@@ -122,46 +122,49 @@ class NotePage extends Component {
                       ref='noteContent'
                       className='form-control'
                       placeholder='New Notes Here'
+                      rows='15'
                     />
                   </div>
                 </div>
-                <Button color='primary' type='submit' onClick={this.toggle}>
+                <Button color='primary' type='submit'>
                   Save
+                </Button>{" "}
+                <Button color='danger' onClick={this.toggle}>
+                  View Notes
                 </Button>
+                <Modal
+                  isOpen={this.state.modal}
+                  toggle={this.toggle}
+                  className={this.props.className}>
+                  <div className='col-xl-12'>
+                    {notes.map((note) => (
+                      <div key={note.uid}>
+                        <ModalHeader>{note.noteTitle}</ModalHeader>
+                        <ModalBody>{note.noteContent}</ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color='danger'
+                            onClick={() => this.removeData(note)}>
+                            Delete
+                          </Button>{" "}
+                          <Button
+                            color='secondary'
+                            onClick={() => this.updateData(note)}>
+                            Edit
+                          </Button>
+                        </ModalFooter>
+                      </div>
+                    ))}
+                  </div>
+                </Modal>
               </Form>
             </div>
           </div>
-
-          <hr />
-          <div className='row'>
-            <div className='col-xl-12'>
-              <h1>Current Notes</h1>
-            </div>
+          <div>
+            <div className='card-body'></div>
           </div>
-          <div className='row'>
-            <div className='col-xl-12'>
-              {notes.map((note) => (
-                <div key={note.uid} className='card'>
-                  <div className='card-body'>
-                    <h5 className='card-title'>{note.noteTitle}</h5>
-                    <p className='card-text'>{note.noteContent}</p>
-                    <Button
-                      color='secondary'
-                      onClick={() => this.removeData(note)}>
-                      Delete
-                    </Button>{" "}
-                    <Button
-                      color='secondary'
-                      onClick={() => this.updateData(note)}>
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <hr />
         </div>
+        <hr />
       </React.Fragment>
     );
   }
