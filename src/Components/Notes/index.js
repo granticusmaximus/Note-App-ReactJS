@@ -1,70 +1,161 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import Loader from "react-loader-spinner";
+import React, { Component } from "react";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
-import Firebase from "../Firebase";
+import Firebase from "firebase";
+import { Button } from "reactstrap";
 
-const NotePage = () => {
-  const [loading, setLoading] = useState(true);
-  const [notePosts, setNotes] = useState([]);
+class NotePage extends Component {
+  constructor(props) {
+    super(props);
 
-  if (loading && !notePosts.length) {
-    new Firebase()
-      .database()
-      .ref("/notes")
-      .orderByChild("date")
-      .once("value")
-      .then((snapshot) => {
-        let posts = [];
-        const snapshotVal = snapshot.val();
-        for (let slug in snapshotVal) {
-          posts.push(snapshotVal[slug]);
-        }
+    this.state = {
+      notes: [],
+      modal: false,
+    };
 
-        const newestFirst = posts.reverse();
-        setNotes(newestFirst);
-        setLoading(false);
+    this.toggle = this.toggle.bind(this);
+  }
+
+  toggle() {
+    this.setState({
+      modal: !this.state.modal,
+    });
+  }
+
+  componentDidMount() {
+    this.getNotesData();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state) {
+      this.writeNoteData();
+    }
+  }
+
+  writeNoteData = () => {
+    Firebase.database().ref("/notes").set(this.state);
+    console.log("DATA SAVED");
+  };
+
+  getNotesData = () => {
+    let ref = Firebase.database().ref("/notes");
+    ref.on("value", (snapshot) => {
+      const state = snapshot.val();
+      this.setState(state);
+    });
+  };
+
+  handleSubmit = (event) => {
+    event.preventDefault();
+    let noteTitle = this.refs.noteTitle.value;
+    let noteContent = this.refs.noteContent.value;
+    let uid = this.refs.uid.value;
+
+    if (uid && noteTitle && noteContent) {
+      const { notes } = this.state;
+      const noteIndex = notes.findIndex((data) => {
+        return data.uid === uid;
       });
-  }
+      notes[noteIndex].name = noteTitle;
+      notes[noteIndex].role = noteContent;
+      this.setState({ notes });
+    } else if (noteTitle && noteContent) {
+      const uid = new Date().getTime().toString();
+      const { notes } = this.state;
+      notes.push({ uid, noteTitle, noteContent });
+      this.setState({ notes });
+    }
 
-  if (loading) {
+    this.refs.noteTitle.value = "";
+    this.refs.noteContent.value = "";
+    this.refs.uid.value = "";
+  };
+
+  removeData = (note) => {
+    const { notes } = this.state;
+    const newState = notes.filter((data) => {
+      return data.uid !== note.uid;
+    });
+    this.setState({ notes: newState });
+  };
+
+  updateData = (note) => {
+    this.refs.uid.value = note.uid;
+    this.refs.noteTitle.value = note.noteTitle;
+    this.refs.noteContent.value = note.noteContent;
+  };
+
+  render() {
+    const { notes } = this.state;
     return (
-      <div className='container'>
-        <center>
-          <Loader
-            type='Grid'
-            color='#04C2C9'
-            height={100}
-            width={100}
-            timeout={3000} //3 secs
-          />
-        </center>
-      </div>
-    );
-  } else {
-    return (
-      <div className='container'>
+      <React.Fragment>
         <div className='container'>
-          <h1 className='pageHeader'>Blog posts</h1>
-          {notePosts.map((note) => (
-            <section key={note.slug} className='blogCard'>
-              <div className='blogCard-content'>
-                <h2>
-                  {note.title} &mdash;{" "}
-                  <span style={{ color: "#5e5e5e" }}>{note.datePretty}</span>
-                </h2>
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: `${note.content.substring(0, 200)}...`,
-                  }}></p>
-                <Link to={`/notes/${note.slug}`}>Continue reading...</Link>
-              </div>
-            </section>
-          ))}
+          <br />
+          <div className='row'>
+            <div className='col-xl-12'>
+              <h1>Add new note here</h1>
+              <form onSubmit={this.handleSubmit}>
+                <div className='row'>
+                  <input type='hidden' ref='uid' />
+                  <div className='form-group col-md-10'>
+                    <h3>Note Title</h3>
+                    <input
+                      type='text'
+                      ref='noteTitle'
+                      className='form-control'
+                      placeholder='Note Title'
+                    />
+                  </div>
+                </div>
+                <div className='row'>
+                  <div className='form-group col-md-10'>
+                    <h3>Note Content</h3>
+                    <textarea
+                      type='text'
+                      ref='noteContent'
+                      className='form-control'
+                      placeholder='New Notes Here'
+                    />
+                  </div>
+                </div>
+                <Button color='primary' type='submit' onClick={this.toggle}>
+                  Save
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          <hr />
+          <div className='row'>
+            <div className='col-xl-12'>
+              <h1>Current Notes</h1>
+            </div>
+          </div>
+          <div className='row'>
+            <div className='col-xl-12'>
+              {notes.map((note) => (
+                <div key={note.uid} className='card'>
+                  <div className='card-body'>
+                    <h5 className='card-title'>{note.noteTitle}</h5>
+                    <p className='card-text'>{note.noteContent}</p>
+                    <button
+                      onClick={() => this.removeData(note)}
+                      className='btn btn-link'>
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => this.updateData(note)}
+                      className='btn btn-link'>
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
-};
+}
 
 export default NotePage;

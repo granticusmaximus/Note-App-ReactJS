@@ -1,109 +1,33 @@
-import React, { useState } from "react";
-import Firebase from "../Firebase/firebase";
-import { Button, Form, FormGroup, Label, Input } from "reactstrap";
+import React, { useState } from 'react';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
-const NewNote = ({ history }) => {
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [content, setContent] = useState("");
+const NoteModal = (props) => {
+  const {
+    buttonLabel,
+    className
+  } = props;
 
-  const generateDate = () => {
-    const now = new Date();
-    const options = { month: "long", day: "numeric", year: "numeric" };
+  const [modal, setModal] = useState(false);
 
-    const year = now.getFullYear();
+  const toggle = () => setModal(!modal);
 
-    let month = now.getMonth() + 1;
-    if (month < 10) {
-      month = `0${month}`;
-    }
-
-    const day = now.getDate();
-    if (day < 10) {
-      day = `0${day}`;
-    }
-
-    return {
-      formatted: `${year}-${month}-${day}`,
-      pretty: now.toLocaleDateString("en-US", options),
-    };
-  };
-
-  const createNote = () => {
-    const date = generateDate();
-    const newPost = {
-      title,
-      dateFormatted: date.formatted,
-      datePretty: date.pretty,
-      slug,
-      content,
-    };
-    Firebase()
-      .database()
-      .ref()
-      .child(`notes/${slug}`)
-      .set(newPost)
-      .then(() => history.push(`/`));
-  };
-
+  const externalCloseBtn = <button className="close" style={{ position: 'absolute', top: '15px', right: '15px' }} onClick={toggle}>&times;</button>;
   return (
-    <Form>
-      <div>
-        <h1>Create a new post</h1>
-        <section style={{ margin: "2rem 0" }}>
-          <FormGroup>
-            <Label htmlFor='title-field'>Title</Label>
-            <Input
-              id='title-field'
-              type='text'
-              value={title}
-              onChange={({ target: { value } }) => {
-                setTitle(value);
-              }}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor='slug-field'>Slug</Label>
-            <Input
-              id='slug-field'
-              type='text'
-              value={slug}
-              onChange={({ target: { value } }) => {
-                setSlug(value);
-              }}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor='content-field'>Content</Label>
-            <Input
-              type='textarea'
-              name='text'
-              style={{ height: 200, verticalAlign: "top" }}
-              id='content'
-              value={content}
-              onChange={({ target: { value } }) => {
-                setContent(value);
-              }}
-            />
-          </FormGroup>
-          <div style={{ textAlign: "right" }}>
-            <Button
-              style={{
-                border: "none",
-                color: "#fff",
-                backgroundColor: "#039be5",
-                borderRadius: "4px",
-                padding: "8px 12px",
-                fontSize: "0.9rem",
-              }}
-              onClick={createNote}>
-              Create
-            </Button>
-          </div>
-        </section>
-      </div>
-    </Form>
+    <div>
+      <Button color="danger" onClick={toggle}>{buttonLabel}</Button>
+      <Modal isOpen={modal} toggle={toggle} className={className} external={externalCloseBtn}>
+        <ModalHeader>Modal title</ModalHeader>
+        <ModalBody>
+          <b>Look at the top right of the page/viewport!</b><br />
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={toggle}>Do Something</Button>{' '}
+          <Button color="secondary" onClick={toggle}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
+    </div>
   );
-};
+}
 
-export default NewNote;
+export default NoteModal;

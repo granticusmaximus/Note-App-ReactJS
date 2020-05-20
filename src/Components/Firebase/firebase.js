@@ -12,15 +12,10 @@ const config = {
   appId: "1:430073025448:web:d3915a3fe1bc0022c8839d",
   measurementId: "G-W08ZHYDFHC",
 };
-let firebaseCache;
 
 class Firebase {
   constructor() {
     app.initializeApp(config);
-    if (firebaseCache) {
-      return firebaseCache;
-    }
-    firebaseCache = app;
     this.auth = app.auth();
     this.db = app.database();
   }
