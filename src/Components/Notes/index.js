@@ -1,7 +1,15 @@
 import React, { Component } from "react";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Firebase from "firebase";
-import { Button } from "reactstrap";
+import {
+  Form,
+  Button,
+  Input,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "reactstrap";
 
 class NotePage extends Component {
   constructor(props) {
@@ -93,10 +101,10 @@ class NotePage extends Component {
           <div className='row'>
             <div className='col-xl-12'>
               <h1>Add new note here</h1>
-              <form onSubmit={this.handleSubmit}>
+              <Form onSubmit={this.handleSubmit}>
                 <div className='row'>
                   <input type='hidden' ref='uid' />
-                  <div className='form-group col-md-10'>
+                  <div className='form-group col-md-6'>
                     <h3>Note Title</h3>
                     <input
                       type='text'
@@ -107,7 +115,7 @@ class NotePage extends Component {
                   </div>
                 </div>
                 <div className='row'>
-                  <div className='form-group col-md-10'>
+                  <div className='form-group col-md-12'>
                     <h3>Note Content</h3>
                     <textarea
                       type='text'
@@ -120,7 +128,7 @@ class NotePage extends Component {
                 <Button color='primary' type='submit' onClick={this.toggle}>
                   Save
                 </Button>
-              </form>
+              </Form>
             </div>
           </div>
 
@@ -137,21 +145,22 @@ class NotePage extends Component {
                   <div className='card-body'>
                     <h5 className='card-title'>{note.noteTitle}</h5>
                     <p className='card-text'>{note.noteContent}</p>
-                    <button
-                      onClick={() => this.removeData(note)}
-                      className='btn btn-link'>
+                    <Button
+                      color='secondary'
+                      onClick={() => this.removeData(note)}>
                       Delete
-                    </button>
-                    <button
-                      onClick={() => this.updateData(note)}
-                      className='btn btn-link'>
+                    </Button>{" "}
+                    <Button
+                      color='secondary'
+                      onClick={() => this.updateData(note)}>
                       Edit
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+          <hr />
         </div>
       </React.Fragment>
     );
