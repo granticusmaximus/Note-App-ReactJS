@@ -1,91 +1,84 @@
-import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-import { compose } from "recompose";
-import { PasswordForgetLink } from "../PasswordForget";
-import { Form, Input, Button } from "reactstrap";
-import { SignUpLink } from "../SignUp";
-import { withFirebase } from "../Firebase";
-import * as ROUTES from "../../Constants/routes";
+import React, { useState } from "react";
+import { Link } from "@reach/router";
 
-const SignInPage = () => (
-  <div>
-    <h1>Sign In</h1>
-    <SignInForm />
-    <PasswordForgetLink />
-    <SignUpLink />
-  </div>
-);
-
-const INITIAL_STATE = {
-  email: "",
-  password: "",
-  error: null,
-};
-
-class SignInFormBase extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = { ...INITIAL_STATE };
-  }
-
-  onSubmit = (event) => {
-    const { email, password } = this.state;
-
-    this.props.firebase
-      .doSignInWithEmailAndPassword(email, password)
-      .then(() => {
-        this.setState({ ...INITIAL_STATE });
-        this.props.history.push(ROUTES.NOTES);
-      })
-      .catch((error) => {
-        this.setState({ error });
-      });
-
+const SignIn = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const signInWithEmailAndPasswordHandler = (event, email, password) => {
     event.preventDefault();
   };
 
-  onChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+  const onChangeHandler = (event) => {
+    const { name, value } = event.currentTarget;
+
+    if (name === "userEmail") {
+      setEmail(value);
+    } else if (name === "userPassword") {
+      setPassword(value);
+    }
   };
 
-  render() {
-    const { email, password, error } = this.state;
-
-    const isInvalid = password === "" || email === "";
-
-    return (
-      <div className='App-box'>
-        <Form onSubmit={this.onSubmit}>
-          <Input
-            name='email'
+  return (
+    <div className='mt-8'>
+      <h1 className='text-3xl mb-2 text-center font-bold'>Sign In</h1>
+      <div className='border border-blue-400 mx-auto w-11/12 md:w-2/4 rounded py-8 px-4 md:px-8'>
+        {error !== null && (
+          <div className='py-4 bg-red-600 w-full text-white text-center mb-3'>
+            {error}
+          </div>
+        )}
+        <form className=''>
+          <label htmlFor='userEmail' className='block'>
+            Email:
+          </label>
+          <input
+            type='email'
+            className='my-1 p-1 w-full'
+            name='userEmail'
             value={email}
-            onChange={this.onChange}
-            type='text'
-            placeholder='Email Address'
+            placeholder='E.g: faruq123@gmail.com'
+            id='userEmail'
+            onChange={(event) => onChangeHandler(event)}
           />
-          <br />
-          <Input
-            name='password'
-            value={password}
-            onChange={this.onChange}
+          <label htmlFor='userPassword' className='block'>
+            Password:
+          </label>
+          <input
             type='password'
-            placeholder='Password'
+            className='mt-1 mb-3 p-1 w-full'
+            name='userPassword'
+            value={password}
+            placeholder='Your Password'
+            id='userPassword'
+            onChange={(event) => onChangeHandler(event)}
           />
-          <br />
-          <Button disabled={isInvalid} type='submit'>
-            Sign In
-          </Button>
-
-          {error && <p>{error.message}</p>}
-        </Form>
+          <button
+            className='bg-green-400 hover:bg-green-500 w-full py-2 text-white'
+            onClick={(event) => {
+              signInWithEmailAndPasswordHandler(event, email, password);
+            }}>
+            Sign in
+          </button>
+        </form>
+        <p className='text-center my-3'>or</p>
+        <button className='bg-red-500 hover:bg-red-600 w-full py-2 text-white'>
+          Sign in with Google
+        </button>
+        <p className='text-center my-3'>
+          Don't have an account?{" "}
+          <Link to='signUp' className='text-blue-500 hover:text-blue-600'>
+            Sign up here
+          </Link>{" "}
+          <br />{" "}
+          <Link
+            to='passwordReset'
+            className='text-blue-500 hover:text-blue-600'>
+            Forgot Password?
+          </Link>
+        </p>
       </div>
-    );
-  }
-}
-
-const SignInForm = compose(withRouter, withFirebase)(SignInFormBase);
-
-export default SignInPage;
-
-export { SignInForm };
+    </div>
+  );
+};
+export default SignIn;

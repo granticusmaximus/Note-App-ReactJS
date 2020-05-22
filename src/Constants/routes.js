@@ -6,3 +6,6 @@ export const ACCOUNT = "/account";
 export const ADMIN = "/admin";
 export const PASSWORD_FORGET = "/pw-forget";
 export const NOTES = "/notes";
+export const EDIT = "/edit/:id";
+export const CREATE = "/create";
+export const SHOW = "/show/:id";
