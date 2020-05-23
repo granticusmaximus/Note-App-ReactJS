@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import SignOutButton from "../SignOut";
+import * as ROUTES from "../../Constants/routes";
+import * as ROLES from "../../Constants/roles";
+import { Link } from "react-router-dom";
 import { AuthUserContext } from "../Session";
 import {
   Collapse,
@@ -11,14 +14,14 @@ import {
 } from "reactstrap";
 
 const Navigation = () => (
-  <div>
-    <AuthUserContext.Consumer>
-      {(authUser) => (authUser ? <NavigationAuth /> : <NavigationNonAuth />)}
-    </AuthUserContext.Consumer>
-  </div>
+  <AuthUserContext.Consumer>
+    {(authUser) =>
+      authUser ? <NavigationAuth authUser={authUser} /> : <NavigationNonAuth />
+    }
+  </AuthUserContext.Consumer>
 );
 
-const NavigationAuth = (props) => {
+const NavigationAuth = ({ authUser }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = () => setIsOpen(!isOpen);
@@ -29,7 +32,19 @@ const NavigationAuth = (props) => {
         <NavbarBrand href='/notes'>Notes App</NavbarBrand>
         <NavbarToggler onClick={toggle} />
         <Collapse isOpen={isOpen} navbar>
-          <Nav className='mr-auto' navbar></Nav>
+          <Nav className='mr-auto' navbar>
+            <li>
+              <Link to={ROUTES.HOME}>Home</Link>
+            </li>
+            <li>
+              <Link to={ROUTES.ACCOUNT}>Account</Link>
+            </li>
+            {!!authUser.roles[ROLES.ADMIN] && (
+              <li>
+                <Link to={ROUTES.ADMIN}>Admin</Link>
+              </li>
+            )}
+          </Nav>
           <NavbarText>
             <SignOutButton />
           </NavbarText>

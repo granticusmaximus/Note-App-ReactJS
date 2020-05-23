@@ -1,84 +1,158 @@
-import React, { useState } from "react";
-import { Link } from "@reach/router";
+import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
+import { compose } from "recompose";
+import { Button, Input } from "reactstrap";
+import { SignUpLink } from "../SignUp";
+import { PasswordForgetLink } from "../PasswordForget";
+import { withFirebase } from "../Firebase";
+import * as ROUTES from "../../Constants/routes";
 
-const SignIn = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const signInWithEmailAndPasswordHandler = (event, email, password) => {
+const SignInPage = () => (
+  <div>
+    <h1>SignIn</h1>
+    <SignInForm />
+    <br />
+    <SignInGoogle />
+    <PasswordForgetLink />
+    <SignUpLink />
+  </div>
+);
+
+const INITIAL_STATE = {
+  email: "",
+  password: "",
+  error: null,
+};
+
+const ERROR_CODE_ACCOUNT_EXISTS =
+  "auth/account-exists-with-different-credential";
+
+const ERROR_MSG_ACCOUNT_EXISTS = `
+  An account with an E-Mail address to
+  this social account already exists. Try to login from
+  this account instead and associate your social accounts on
+  your personal account page.
+`;
+
+class SignInFormBase extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...INITIAL_STATE };
+  }
+
+  onSubmit = (event) => {
+    const { email, password } = this.state;
+
+    this.props.firebase
+      .doSignInWithEmailAndPassword(email, password)
+      .then(() => {
+        this.setState({ ...INITIAL_STATE });
+        this.props.history.push(ROUTES.HOME);
+      })
+      .catch((error) => {
+        this.setState({ error });
+      });
+
     event.preventDefault();
   };
 
-  const onChangeHandler = (event) => {
-    const { name, value } = event.currentTarget;
-
-    if (name === "userEmail") {
-      setEmail(value);
-    } else if (name === "userPassword") {
-      setPassword(value);
-    }
+  onChange = (event) => {
+    this.setState({ [event.target.name]: event.target.value });
   };
 
-  return (
-    <div className='mt-8'>
-      <h1 className='text-3xl mb-2 text-center font-bold'>Sign In</h1>
-      <div className='border border-blue-400 mx-auto w-11/12 md:w-2/4 rounded py-8 px-4 md:px-8'>
-        {error !== null && (
-          <div className='py-4 bg-red-600 w-full text-white text-center mb-3'>
-            {error}
+  render() {
+    const { email, password, error } = this.state;
+
+    const isInvalid = password === "" || email === "";
+
+    return (
+      <form onSubmit={this.onSubmit}>
+        <div className='row'>
+          <div className='col-xl-6'>
+            <Input
+              name='email'
+              value={email}
+              onChange={this.onChange}
+              type='text'
+              placeholder='Email Address'
+            />
+            <br />
+            <Input
+              name='password'
+              value={password}
+              onChange={this.onChange}
+              type='password'
+              placeholder='Password'
+            />
+            <br />
+            <Button color='success' disabled={isInvalid} type='submit'>
+              Sign In
+            </Button>
+
+            {error && <p>{error.message}</p>}
           </div>
-        )}
-        <form className=''>
-          <label htmlFor='userEmail' className='block'>
-            Email:
-          </label>
-          <input
-            type='email'
-            className='my-1 p-1 w-full'
-            name='userEmail'
-            value={email}
-            placeholder='E.g: faruq123@gmail.com'
-            id='userEmail'
-            onChange={(event) => onChangeHandler(event)}
-          />
-          <label htmlFor='userPassword' className='block'>
-            Password:
-          </label>
-          <input
-            type='password'
-            className='mt-1 mb-3 p-1 w-full'
-            name='userPassword'
-            value={password}
-            placeholder='Your Password'
-            id='userPassword'
-            onChange={(event) => onChangeHandler(event)}
-          />
-          <button
-            className='bg-green-400 hover:bg-green-500 w-full py-2 text-white'
-            onClick={(event) => {
-              signInWithEmailAndPasswordHandler(event, email, password);
-            }}>
-            Sign in
-          </button>
-        </form>
-        <p className='text-center my-3'>or</p>
-        <button className='bg-red-500 hover:bg-red-600 w-full py-2 text-white'>
-          Sign in with Google
-        </button>
-        <p className='text-center my-3'>
-          Don't have an account?{" "}
-          <Link to='signUp' className='text-blue-500 hover:text-blue-600'>
-            Sign up here
-          </Link>{" "}
-          <br />{" "}
-          <Link
-            to='passwordReset'
-            className='text-blue-500 hover:text-blue-600'>
-            Forgot Password?
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
-};
-export default SignIn;
+        </div>
+      </form>
+    );
+  }
+}
+
+class SignInGoogleBase extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { error: null };
+  }
+
+  onSubmit = (event) => {
+    this.props.firebase
+      .doSignInWithGoogle()
+      .then((socialAuthUser) => {
+        // Create a user in your Firebase Realtime Database too
+        return this.props.firebase.user(socialAuthUser.user.uid).set(
+          {
+            username: socialAuthUser.user.displayName,
+            email: socialAuthUser.user.email,
+            roles: {},
+          },
+          { merge: true }
+        );
+      })
+      .then(() => {
+        this.setState({ error: null });
+        this.props.history.push(ROUTES.HOME);
+      })
+      .catch((error) => {
+        if (error.code === ERROR_CODE_ACCOUNT_EXISTS) {
+          error.message = ERROR_MSG_ACCOUNT_EXISTS;
+        }
+
+        this.setState({ error });
+      });
+
+    event.preventDefault();
+  };
+
+  render() {
+    const { error } = this.state;
+
+    return (
+      <form onSubmit={this.onSubmit}>
+        <Button color='danger' type='submit'>
+          Sign In with Google
+        </Button>
+
+        {error && <p>{error.message}</p>}
+      </form>
+    );
+  }
+}
+
+const SignInForm = compose(withRouter, withFirebase)(SignInFormBase);
+
+const SignInGoogle = compose(withRouter, withFirebase)(SignInGoogleBase);
+
+export default SignInPage;
+
+export { SignInForm, SignInGoogle };

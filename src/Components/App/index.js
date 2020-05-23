@@ -4,15 +4,12 @@ import Navigation from "../Navigation";
 import LandingPage from "../Landing";
 import SignUpPage from "../SignUp";
 import SignInPage from "../SignIn";
-import PasswordForgetPage from "../PasswordReset";
+import PasswordForgetPage from "../PasswordForget";
 import HomePage from "../Home";
-import ProfilePage from "../Profile";
 import * as ROUTES from "../../Constants/routes";
 import { withAuthentication } from "../Session";
-import NotePage from "../Notes";
-import Create from "../Notes/Create";
-import Edit from "../Notes/Edit";
-import Show from "../Notes/Show";
+import AccountPage from "../Account";
+import AdminPage from "../Admin";
 
 const App = () => (
   <Router>
@@ -28,11 +25,8 @@ const App = () => (
           component={PasswordForgetPage}
         />
         <Route exact path={ROUTES.HOME} component={HomePage} />
-        <Route exact path={ROUTES.ACCOUNT} component={ProfilePage} />
-        <Route exact path={ROUTES.NOTES} component={NotePage} />
-        <Route exact path={ROUTES.CREATE} component={Create} />
-        <Route exact path={ROUTES.EDIT} component={Edit} />
-        <Route exact path={ROUTES.SHOW} component={Show} />
+        <Route path={ROUTES.ACCOUNT} component={AccountPage} />
+        <Route path={ROUTES.ADMIN} component={AdminPage} />
       </div>
     </div>
   </Router>
